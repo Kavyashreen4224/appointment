@@ -11,6 +11,8 @@
         <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
     <?php endif; ?>
 
+    <a href="<?= site_url('doctor/addAppointment') ?>" class="btn btn-success mb-3">Add Appointment</a>
+
     <table class="table table-bordered table-striped mt-3">
         <thead class="table-dark">
             <tr>
@@ -27,7 +29,12 @@
                 <?php foreach($appointments as $app): ?>
                     <tr>
                         <td><?= esc($app['id']) ?></td>
-                        <td><?= esc($app['patient_name']) ?></td>
+                        <td>
+    <a href="<?= site_url('doctor/patient/' . $app['patient_id']) ?>">
+        <?= esc($app['patient_name']) ?>
+    </a>
+</td>
+
                         <td><?= esc($app['start_datetime']) ?></td>
                         <td><?= esc($app['end_datetime']) ?></td>
                         <td>
@@ -40,10 +47,19 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <a href="<?= site_url('doctor/appointment/'.$app['id']) ?>" class="btn btn-sm btn-primary">
-                                View Details
-                            </a>
-                        </td>
+    <?php if(!empty($app['prescription_id'])): ?>
+        <a href="<?= site_url('doctor/viewPrescription/'.$app['prescription_id']) ?>" 
+           class="btn btn-sm btn-success">
+           View Prescription
+        </a>
+    <?php else: ?>
+        <a href="<?= site_url('doctor/addPrescription/'.$app['id']) ?>" 
+           class="btn btn-sm btn-primary">
+           Add Prescription
+        </a>
+    <?php endif; ?>
+</td>
+
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>
@@ -53,6 +69,7 @@
             <?php endif; ?>
         </tbody>
     </table>
+      <a href="<?= site_url('doctor/dashboard') ?>" class="btn btn-secondary mt-3">Back to Dashboard</a>
 </div>
 
 <?= $this->endSection() ?>

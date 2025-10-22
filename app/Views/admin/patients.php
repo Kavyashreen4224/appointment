@@ -2,32 +2,49 @@
 <?= $this->section('content') ?>
 
 <div class="container mt-4">
-    <h2>Patients</h2>
-    <a href="<?= site_url('admin/addPatient') ?>" class="btn btn-primary mb-3">Add Patient</a>
-    <table class="table table-bordered">
-        <thead>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Patients List</h2>
+        <a href="<?= site_url('admin/addPatient') ?>" class="btn btn-primary">Add Patient</a>
+    </div>
+
+    <?php if(session()->getFlashdata('success')): ?>
+        <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
+    <?php endif; ?>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
             <tr>
-                <th>ID</th>
+                <th>#</th>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Phone</th>
+                <th>Age</th>
+                <th>Gender</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach($patients as $p): ?>
-                <tr>
-                    <td><?= $p['id'] ?></td>
-                    <td><?= $p['name'] ?></td>
-                    <td><?= $p['email'] ?></td>
-                    <td><?= $p['phone'] ?></td>
-                    <td>
-                        <a href="<?= site_url('admin/editPatient/'.$p['id']) ?>" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="<?= site_url('admin/deletePatient/'.$p['id']) ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
-                        <a href="<?= site_url('admin/visits/'.$p['id']) ?>" class="btn btn-sm btn-info">Visits</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
+            <?php if($patients): ?>
+                <?php foreach($patients as $p): ?>
+                    <tr>
+                        <td><?= esc($p['id']) ?></td>
+                        <td>
+                            <a href="<?= site_url('admin/patientProfile/'.$p['id']) ?>">
+                                <?= esc($p['name']) ?>
+                            </a>
+                        </td>
+                        <td><?= esc($p['email']) ?></td>
+                        <td><?= esc($p['age']) ?></td>
+                        <td><?= esc($p['gender']) ?></td>
+                        <td>
+                            <a href="<?= site_url('admin/editPatient/'.$p['id']) ?>" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="<?= site_url('admin/deletePatient/'.$p['id']) ?>" class="btn btn-sm btn-danger"
+                               onclick="return confirm('Are you sure?')">Delete</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr><td colspan="6" class="text-center">No patients found.</td></tr>
+            <?php endif; ?>
         </tbody>
     </table>
 </div>

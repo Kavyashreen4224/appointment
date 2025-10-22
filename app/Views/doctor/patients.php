@@ -32,7 +32,10 @@
       <?php if ($patients): ?>
         <?php foreach ($patients as $p): ?>
           <tr>
-            <td><?= esc($p['id']) ?></td>
+            <td>
+    <a href="<?= site_url('doctor/patient/' . $p['id']) ?>"><?= esc($p['name']) ?></a>
+</td>
+
             <td><?= esc($p['name']) ?></td>
             <td><?= esc($p['email']) ?></td>
             <td><?= esc($p['age']) ?></td>

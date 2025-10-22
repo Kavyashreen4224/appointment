@@ -9,6 +9,7 @@ use App\Models\PatientModel;
 use App\Models\AppointmentModel;
 use App\Models\VisitHistoryModel;
 use App\Models\HospitalModel;
+use App\Models\PrescriptionModel;
 
 class DoctorController extends BaseController
 {
@@ -19,6 +20,7 @@ class DoctorController extends BaseController
     protected $visitHistoryModel;
     protected $hospitalModel;
     protected $session;
+     protected $prescriptionModel; 
 
     public function __construct()
     {
@@ -28,6 +30,7 @@ class DoctorController extends BaseController
         $this->appointmentModel = new AppointmentModel();
         $this->visitHistoryModel = new VisitHistoryModel();
         $this->hospitalModel = new HospitalModel();
+        $this->prescriptionModel = new PrescriptionModel(); 
         $this->session = session();
     }
 
@@ -181,6 +184,39 @@ public function dashboard()
         return redirect()->to('doctor/patients')->with('success', 'Patient updated successfully!');
     }
 
+    public function patientProfile($patient_id)
+{
+    $hospitalId = $this->session->get('hospital_id');
+
+    // Fetch patient info
+    $patient = $this->patientModel
+        ->select('patients.*, users.name, users.email, users.role')
+        ->join('users', 'users.id = patients.user_id')
+        ->where('patients.id', $patient_id)
+        ->where('patients.hospital_id', $hospitalId)
+        ->first();
+
+    if (!$patient) {
+        return redirect()->back()->with('error', 'Patient not found.');
+    }
+
+    // Fetch visit history with doctor names and prescriptions
+    $visits = $this->visitHistoryModel
+        ->select('visit_history.*, doctors.id as doctor_id, users.name as doctor_name, prescriptions.id as prescription_id, prescriptions.prescription_text')
+        ->join('doctors', 'doctors.id = visit_history.doctor_id', 'left')
+        ->join('users', 'users.id = doctors.user_id', 'left')
+        ->join('prescriptions', 'prescriptions.visit_id = visit_history.id', 'left')
+        ->where('visit_history.patient_id', $patient_id)
+        ->orderBy('visit_history.created_at', 'DESC')
+        ->findAll();
+
+    return view('doctor/patient_profile', [
+        'patient' => $patient,
+        'visits' => $visits
+    ]);
+}
+
+
     // --------------------------------------------------------
     // Appointments list
     // --------------------------------------------------------
@@ -188,13 +224,16 @@ public function dashboard()
     {
         $doctor = $this->doctorModel->where('user_id', $this->session->get('user_id'))->first();
 
-        $appointments = $this->appointmentModel
-            ->select('appointments.*, u.name AS patient_name')
-            ->join('patients p', 'p.id = appointments.patient_id', 'left')
-            ->join('users u', 'u.id = p.user_id', 'left')
-            ->where('appointments.doctor_id', $doctor['id'])
-            ->orderBy('appointments.start_datetime', 'DESC')
-            ->findAll();
+       $appointments = $this->appointmentModel
+    ->select('appointments.*, u.name AS patient_name, p.id AS patient_id, pr.id AS prescription_id')
+    ->join('patients p', 'p.id = appointments.patient_id', 'left')
+    ->join('users u', 'u.id = p.user_id', 'left')
+    ->join('visit_history vh', 'vh.appointment_id = appointments.id', 'left')
+    ->join('prescriptions pr', 'pr.visit_id = vh.id', 'left')
+    ->where('appointments.doctor_id', $doctor['id'])
+    ->orderBy('appointments.start_datetime', 'DESC')
+    ->findAll();
+
 
         return view('doctor/appointments', ['appointments' => $appointments]);
     }
@@ -225,6 +264,51 @@ public function dashboard()
             'visits' => $visits
         ]);
     }
+
+    // --------------------------------------------------------
+// Add Appointment Form
+// --------------------------------------------------------
+public function addAppointment()
+{
+    $hospitalId = $this->session->get('hospital_id');
+    $doctor = $this->doctorModel->where('user_id', $this->session->get('user_id'))->first();
+
+    // Fetch patients in this hospital
+    $patients = $this->patientModel
+        ->select('patients.*, users.name, users.email')
+        ->join('users', 'users.id = patients.user_id')
+        ->where('patients.hospital_id', $hospitalId)
+        ->findAll();
+
+    return view('doctor/add_appointment', [
+        'patients' => $patients,
+        'doctor' => $doctor
+    ]);
+}
+
+// --------------------------------------------------------
+// Save Appointment
+// --------------------------------------------------------
+public function saveAppointment()
+{
+    $doctor = $this->doctorModel->where('user_id', $this->session->get('user_id'))->first();
+    if (!$doctor) {
+        return redirect()->back()->with('error', 'Doctor not found.');
+    }
+
+    $this->appointmentModel->insert([
+        'doctor_id' => $doctor['id'],
+        'patient_id' => $this->request->getPost('patient_id'),
+        'start_datetime' => $this->request->getPost('start_datetime'),
+        'end_datetime' => $this->request->getPost('end_datetime'),
+        'status' => 'pending',
+        'created_by' => $this->session->get('user_id'),
+        'created_at' => date('Y-m-d H:i:s')
+    ]);
+
+    return redirect()->to('doctor/appointments')->with('success', 'Appointment added successfully!');
+}
+
 
     // --------------------------------------------------------
     // Add Visit Record
@@ -278,6 +362,97 @@ public function dashboard()
             'visit_history' => $visit_history
         ]);
     }
+
+public function addPrescription($visit_id)
+{
+    $visit = $this->visitHistoryModel->find($visit_id);
+    if (!$visit) {
+        return redirect()->back()->with('error', 'Visit not found.');
+    }
+
+    $patient = $this->patientModel
+        ->select('patients.*, users.name as patient_name, users.email')
+        ->join('users', 'users.id = patients.user_id')
+        ->where('patients.id', $visit['patient_id'])
+        ->first();
+
+    // Fetch the related appointment
+    $appointment = $this->appointmentModel->find($visit['appointment_id']);
+
+    return view('doctor/add_prescription', [
+        'visit' => $visit,
+        'patient' => $patient,
+        'appointment' => $appointment  // <-- pass this to view
+    ]);
+}
+
+
+
+// Save Prescription
+
+public function savePrescription()
+{
+    $visit_id = $this->request->getPost('visit_id');
+    $prescription_text = $this->request->getPost('prescription_text');
+
+    if (!$visit_id || !$prescription_text) {
+        return redirect()->back()->with('error', 'All fields are required.');
+    }
+
+    // Get the visit record
+    $visit = $this->visitHistoryModel->find($visit_id);
+    if (!$visit) {
+        return redirect()->back()->with('error', 'Visit not found.');
+    }
+
+    // Make sure the patient exists
+    $patient = $this->patientModel->find($visit['patient_id']);
+    if (!$patient) {
+        return redirect()->back()->with('error', 'Patient not found.');
+    }
+
+    // Make sure the doctor exists
+    $doctor = $this->doctorModel->find($visit['doctor_id']);
+    if (!$doctor) {
+        return redirect()->back()->with('error', 'Doctor not found.');
+    }
+
+    // Insert prescription
+    $this->prescriptionModel->insert([
+        'visit_id' => $visit_id,
+        'appointment_id' => $visit['appointment_id'],
+        'patient_id' => $visit['patient_id'],
+        'doctor_id' => $visit['doctor_id'],    // ✅ required foreign key
+        'prescription_text' => $prescription_text,
+        'created_at' => date('Y-m-d H:i:s'),
+        'updated_at' => date('Y-m-d H:i:s')
+    ]);
+
+    return redirect()->to('doctor/appointments')->with('success', 'Prescription saved successfully!');
+}
+
+
+
+// View Prescription
+public function viewPrescription($prescription_id)
+{
+    $prescription = $this->prescriptionModel->find($prescription_id);
+    if (!$prescription) return redirect()->back()->with('error', 'Prescription not found.');
+
+    $visit = $this->visitHistoryModel->find($prescription['visit_id']);
+    $patient = $this->patientModel
+    ->select('patients.*, users.name as patient_name, users.email')
+    ->join('users', 'users.id = patients.user_id')
+    ->where('patients.id', $visit['patient_id'])
+    ->first();
+
+
+    return view('doctor/view_prescription', [
+        'prescription' => $prescription,
+        'patient' => $patient,
+        'visit' => $visit
+    ]);
+}
 
  
 }

@@ -2,11 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\AppointmentModel;
 use App\Models\UserModel;
 use App\Models\PatientModel;
 use App\Models\VisitHistoryModel;
 use App\Models\PrescriptionModel;
 use App\Models\DoctorModel;
+use App\Models\HospitalModel;
 use CodeIgniter\Controller;
 
 class PatientController extends Controller
@@ -17,6 +19,8 @@ class PatientController extends Controller
     protected $visitModel;
     protected $prescriptionModel;
     protected $doctorModel;
+       protected $hospitalModel;
+       protected $appointmentModel;
 
     public function __construct()
     {
@@ -26,6 +30,8 @@ class PatientController extends Controller
         $this->visitModel = new VisitHistoryModel();
         $this->prescriptionModel = new PrescriptionModel();
         $this->doctorModel = new DoctorModel();
+        $this->appointmentModel = new AppointmentModel();
+             $this->hospitalModel = new HospitalModel();
     }
 
     // ✅ Patient Dashboard/Profile
@@ -65,6 +71,8 @@ class PatientController extends Controller
             'visits' => $visits
         ]);
     }
+
+
 
     // ✅ Prescription download
    public function downloadPrescription($id)
@@ -130,5 +138,75 @@ class PatientController extends Controller
     $dompdf->render();
     $dompdf->stream('Prescription.pdf', ["Attachment" => 1]);
 }
+
+public function bookAppointment()
+    {
+        $user_id = $this->session->get('user_id');
+        if (!$user_id) return redirect()->to('/login')->with('error', 'Please login first.');
+
+        $hospitals = $this->hospitalModel->findAll();
+        $doctors = $this->doctorModel
+            ->select('doctors.id, users.name as doctor_name, doctors.hospital_id, doctors.expertise, hospitals.name as hospital_name')
+            ->join('users', 'users.id = doctors.user_id')
+            ->join('hospitals', 'hospitals.id = doctors.hospital_id')
+            ->findAll();
+
+        return view('patient/book_appointment', [
+            'hospitals' => $hospitals,
+            'doctors' => $doctors
+        ]);
+    }
+
+
+   public function saveAppointment()
+    {
+        $user_id = $this->session->get('user_id');
+        if (!$user_id) return redirect()->to('/login')->with('error', 'Please login first.');
+
+        $hospital_id = $this->request->getPost('hospital_id');
+        $doctor_id = $this->request->getPost('doctor_id');
+        $appointment_date = $this->request->getPost('appointment_date');
+        $appointment_time = $this->request->getPost('appointment_time');
+
+        // Check if patient exists for this hospital
+        $patient = $this->patientModel
+            ->where('user_id', $user_id)
+            ->where('hospital_id', $hospital_id)
+            ->first();
+
+        if (!$patient) {
+            // Auto-register patient for this hospital
+            $user = $this->userModel->find($user_id);
+            $patient_id = $this->patientModel->insert([
+                'user_id' => $user_id,
+                'hospital_id' => $hospital_id,
+                'age' => $user['age'] ?? 0,
+                'gender' => $user['gender'] ?? 'other',
+                'created_by' => $user_id,
+                'updated_by' => $user_id,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ], true);
+        } else {
+            $patient_id = $patient['id'];
+        }
+
+        $start_datetime = $appointment_date . ' ' . $appointment_time;
+        $this->appointmentModel->insert([
+            'doctor_id' => $doctor_id,
+            'patient_id' => $patient_id,
+            'start_datetime' => $start_datetime,
+            'end_datetime' => date('Y-m-d H:i:s', strtotime($start_datetime . ' +30 minutes')),
+            'status' => 'pending',
+            'created_by' => $user_id,
+            'updated_by' => $user_id,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        return redirect()->to('patient/dashboard')->with('success', 'Appointment booked successfully.');
+    }
+
+
 
 }

@@ -3,9 +3,10 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\DoctorModel;
 use App\Models\UserModel;
 use App\Models\HospitalModel;
-
+use App\Models\PatientModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class AuthController extends BaseController
@@ -13,12 +14,17 @@ class AuthController extends BaseController
     protected $userModel;
     protected $hospitalModel;
     protected $session;
+    protected $patientModel;
+    protected $doctorModel;
 
     public function __construct()
     {
         $this->userModel = new UserModel();
         $this->hospitalModel = new HospitalModel();
+         $this->patientModel = new PatientModel();
+          $this->doctorModel = new DoctorModel();
         $this->session = session();
+
     }
 
     // 🔹 Landing Page
@@ -180,18 +186,26 @@ public function login()
 public function loginPost()
 {
     $email = $this->request->getPost('email');
-$password = $this->request->getPost('password');
-$hospital_id = $this->request->getPost('hospital_id');
+    $password = $this->request->getPost('password');
+    $hospital_id = $this->request->getPost('hospital_id');
 
-// Fetch user
-$userQuery = $this->userModel->where('email', $email);
-if ($hospital_id) {
-    $userQuery->where('hospital_id', $hospital_id);
-}
-$user = $userQuery->first();
+    // Fetch user
+    $userQuery = $this->userModel->where('email', $email);
+    if ($hospital_id) {
+        $userQuery->where('hospital_id', $hospital_id);
+    }
+    $user = $userQuery->first();
 
-// Check password & role
-if ($user && password_verify($password, $user['password'])) {
+    if (!$user) {
+        return redirect()->back()->with('error', 'User not found.');
+    }
+
+    // Check password
+    if (!password_verify($password, $user['password'])) {
+        return redirect()->back()->with('error', 'Incorrect password.');
+    }
+
+    // Set session
     $this->session->set([
         'user_id' => $user['id'],
         'name' => $user['name'],
@@ -210,12 +224,11 @@ if ($user && password_verify($password, $user['password'])) {
             return redirect()->to('/doctor/dashboard');
         case 'patient':
             return redirect()->to('/patient/dashboard');
+        default:
+            return redirect()->back()->with('error', 'Role not recognized.');
     }
-} else {
-    return redirect()->back()->with('error', 'Invalid credentials or hospital');
 }
 
-}
 
 
 
