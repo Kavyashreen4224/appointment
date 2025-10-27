@@ -150,6 +150,27 @@ $routes->get('appointments', 'DoctorController::appointments');
 $routes->get('addAppointment', 'DoctorController::addAppointment'); // form
 $routes->post('saveAppointment', 'DoctorController::saveAppointment'); // submit
 
+// Doctor Billing Routes
+$routes->get('addBill/(:num)', 'DoctorController::addBill/$1');
+$routes->post('saveBill', 'DoctorController::saveBill');
+$routes->get('viewBill/(:num)', 'DoctorController::viewBill/$1');
+
+$routes->get('markDone/(:num)', 'DoctorController::markDone/$1');
+$routes->get('cancelAppointment/(:num)', 'DoctorController::cancelAppointment/$1');
+$routes->get('reschedule/(:num)', 'DoctorController::reschedule/$1');
+
+$routes->post('saveVisit', 'DoctorController::saveVisit');
+
+$routes->post('updatePaymentStatus/(:num)', 'DoctorController::updatePaymentStatus/$1');
+
+$routes->get('editBill/(:num)', 'DoctorController::editBill/$1');
+$routes->post('updateBill/(:num)', 'DoctorController::updateBill/$1');
+$routes->get('downloadBill/(:num)', 'DoctorController::downloadBill/$1');
+
+
+
+
+
 });
 
 
@@ -174,6 +195,8 @@ $routes->group('patient', function($routes) {
 
   $routes->get('bookAppointment', 'PatientController::bookAppointment');
     $routes->post('saveAppointment', 'PatientController::saveAppointment');
+    $routes->get('viewBill/(:num)', 'PatientController::viewBill/$1');
+
     
 });
 

@@ -1,76 +1,102 @@
 <?= $this->extend('layouts/doctor_layout') ?>
 <?= $this->section('content') ?>
 
-<div class="container mt-4">
-    <h2>Appointment Details</h2>
-
-    <!-- Back Button -->
-    <a href="<?= site_url('doctor/appointments') ?>" class="btn btn-secondary mb-3">Back to Appointments</a>
-
-    <!-- Appointment Info -->
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5>Patient: <?= esc($appointment['patient_name']) ?></h5>
-            <p><strong>Start:</strong> <?= esc($appointment['start_datetime']) ?></p>
-            <p><strong>End:</strong> <?= esc($appointment['end_datetime']) ?></p>
-            <p><strong>Status:</strong> <?= esc(ucfirst($appointment['status'])) ?></p>
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Appointment Details</h4>
+            <span class="badge 
+                <?= $appointment['status'] === 'completed' ? 'bg-success' : 
+                    ($appointment['status'] === 'pending' ? 'bg-warning text-dark' : 'bg-danger') ?>">
+                <?= ucfirst($appointment['status']) ?>
+            </span>
         </div>
-    </div>
 
-    <!-- Visit History -->
-    <div class="card mb-3">
-        <div class="card-header">
-            <h5>Visit History</h5>
-        </div>
-        <div class="card-body">
-            <?php if(!empty($visit_history)): ?>
-                <ul class="list-group">
-                    <?php foreach($visit_history as $visit): ?>
-                        <li class="list-group-item">
-                            <strong>Date:</strong> <?= esc($visit['created_at']) ?><br>
-                            <strong>Reason:</strong> <?= esc($visit['reason']) ?><br>
-                            <strong>Weight:</strong> <?= esc($visit['weight']) ?> kg<br>
-                            <strong>Blood Pressure:</strong> <?= esc($visit['blood_pressure']) ?><br>
-                            <strong>Doctor Comments:</strong> <?= esc($visit['doctor_comments']) ?>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php else: ?>
-                <p>No visit history found.</p>
+        <div class="card-body p-4">
+            <!-- Doctor & Patient Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="text-primary"><i class="bi bi-person-badge"></i> Doctor</h5>
+                    <p class="mb-1"><strong>Name:</strong> <?= esc($appointment['doctor_name']) ?></p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-primary"><i class="bi bi-person-fill"></i> Patient</h5>
+                    <p class="mb-1"><strong>Name:</strong> <?= esc($appointment['patient_name']) ?></p>
+                </div>
+            </div>
+
+            <!-- Appointment Timing -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Start Date & Time:</strong> <?= esc($appointment['start_datetime']) ?></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>End Date & Time:</strong> <?= esc($appointment['end_datetime']) ?></p>
+                </div>
+            </div>
+
+            <!-- Visit Details -->
+            <?php if (!empty($appointment['reason'])): ?>
+                <div class="mt-4">
+                    <h5 class="text-secondary border-bottom pb-2">Visit Details</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Reason:</strong> <?= esc($appointment['reason']) ?></p>
+                            <p><strong>Doctor Comments:</strong> <?= esc($appointment['doctor_comments']) ?></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Weight:</strong> <?= esc($appointment['weight']) ?> kg</p>
+                            <p><strong>Blood Pressure:</strong> <?= esc($appointment['blood_pressure']) ?></p>
+                        </div>
+                    </div>
+                </div>
             <?php endif; ?>
-        </div>
-    </div>
 
-    <!-- Add Visit -->
-    <div class="card mb-3">
-        <div class="card-header">
-            <h5>Add Visit</h5>
-        </div>
-        <div class="card-body">
-            <form action="<?= site_url('doctor/addVisit/'.$appointment['id']) ?>" method="post">
-                <input type="hidden" name="patient_id" value="<?= esc($appointment['patient_id']) ?>">
-                <div class="mb-3">
-                    <label for="reason" class="form-label">Reason</label>
-                    <textarea name="reason" id="reason" class="form-control" required></textarea>
+            <!-- Prescription -->
+            <?php if (!empty($appointment['prescription_id'])): ?>
+                <div class="mt-4">
+                    <h5 class="text-secondary border-bottom pb-2">Prescription</h5>
+                    <p><?= nl2br(esc($appointment['prescription_text'])) ?></p>
+                    <a href="<?= site_url('doctor/viewPrescription/' . $appointment['prescription_id']) ?>" 
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-file-earmark-medical"></i> View Full Prescription
+                    </a>
                 </div>
+            <?php endif; ?>
 
-                <div class="mb-3">
-                    <label for="weight" class="form-label">Weight (kg)</label>
-                    <input type="number" step="0.01" name="weight" id="weight" class="form-control" required>
+            <!-- Billing -->
+            <?php if (!empty($appointment['bill_id'])): ?>
+                <div class="mt-4">
+                    <h5 class="text-secondary border-bottom pb-2">Billing Information</h5>
+                    <ul class="list-unstyled mb-3">
+                        <li><strong>Total Amount:</strong> ₹<?= esc($appointment['total_amount']) ?></li>
+                        <li>
+                            <strong>Payment Status:</strong>
+                            <?php if ($appointment['payment_status'] === 'Paid'): ?>
+                                <span class="badge bg-success">Paid</span>
+                            <?php else: ?>
+                                <span class="badge bg-danger">Pending</span>
+                            <?php endif; ?>
+                        </li>
+                        <li><strong>Payment Mode:</strong> <?= esc($appointment['payment_mode'] ?? 'N/A') ?></li>
+                    </ul>
+
+                    <a href="<?= site_url('doctor/viewBill/' . $appointment['bill_id']) ?>" 
+                       class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-receipt"></i> View Bill
+                    </a>
                 </div>
-
-                <div class="mb-3">
-                    <label for="blood_pressure" class="form-label">Blood Pressure</label>
-                    <input type="text" name="blood_pressure" id="blood_pressure" class="form-control" required>
+            <?php else: ?>
+                <div class="alert alert-warning mt-4">
+                    No billing details added yet.
                 </div>
+            <?php endif; ?>
 
-                <div class="mb-3">
-                    <label for="doctor_comments" class="form-label">Doctor Comments</label>
-                    <textarea name="doctor_comments" id="doctor_comments" class="form-control"></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Add Visit</button>
-            </form>
+            <div class="mt-4 text-end">
+                <a href="<?= site_url('doctor/appointments') ?>" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Appointments
+                </a>
+            </div>
         </div>
     </div>
 </div>

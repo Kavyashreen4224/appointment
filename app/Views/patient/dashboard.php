@@ -32,6 +32,7 @@
                 <th>Weight</th>
                 <th>Doctor Comments</th>
                 <th>Prescription</th>
+                <th>Bill</th> 
             </tr>
         </thead>
         <tbody>
@@ -51,6 +52,14 @@
                                 <span class="text-muted">No Prescription</span>
                             <?php endif; ?>
                         </td>
+                         <td>
+                        <?php if (!empty($visit['bill_id'])): ?>
+                            <a href="<?= site_url('patient/viewBill/'.$visit['bill_id']) ?>" 
+                               class="btn btn-primary btn-sm">View Bill</a>
+                        <?php else: ?>
+                            <span class="text-muted">No Bill</span>
+                        <?php endif; ?>
+                    </td>
                     </tr>
                 <?php endforeach; ?>
             <?php else: ?>

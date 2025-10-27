@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <title>Doctor Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+    }
+    .card-link:hover .card {
+      transform: scale(1.03);
+      transition: transform 0.2s ease-in-out;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+    }
+  </style>
 </head>
 <body class="bg-light">
 
@@ -20,61 +31,36 @@
 
 <div class="container mt-5">
   <h3>Welcome Dr. <?= esc($doctor['name']) ?></h3>
-<p class="text-muted">Email: <?= esc($doctor['email']) ?></p>
-<p class="text-muted">Hospital: <?= esc($doctor['hospital_name']) ?></p>
-
+  <p class="text-muted">Email: <?= esc($doctor['email']) ?></p>
+  <p class="text-muted">Hospital: <?= esc($doctor['hospital_name']) ?></p>
 
   <div class="row mt-4">
+    <!-- ✅ Clickable Patients Card -->
     <div class="col-md-4">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h4 class="card-title text-primary"><?= esc($total_patients) ?></h4>
-          <p class="card-text">Total Patients</p>
+      <a href="<?= site_url('doctor/patients') ?>" class="card-link">
+        <div class="card text-center shadow-sm">
+          <div class="card-body">
+            <h4 class="card-title text-primary"><?= esc($total_patients) ?></h4>
+            <p class="card-text">Total Patients</p>
+          </div>
         </div>
-      </div>
+      </a>
     </div>
+
+    <!-- ✅ Clickable Appointments Card -->
     <div class="col-md-4">
-      <div class="card text-center shadow-sm">
-        <div class="card-body">
-          <h4 class="card-title text-success"><?= esc($total_appointments) ?></h4>
-          <p class="card-text">Appointments</p>
+      <a href="<?= site_url('doctor/appointments') ?>" class="card-link">
+        <div class="card text-center shadow-sm">
+          <div class="card-body">
+            <h4 class="card-title text-success"><?= esc($total_appointments) ?></h4>
+            <p class="card-text">Appointments</p>
+          </div>
         </div>
-      </div>
+      </a>
     </div>
   </div>
-
-  <h4 class="mt-5">Recent Appointments</h4>
-  <table class="table table-bordered mt-3 bg-white">
-    <thead class="table-primary">
-      <tr>
-        <th>#</th>
-        <th>Patient Name</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>View</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php if ($appointments): ?>
-        <?php foreach ($appointments as $a): ?>
-          <tr>
-            <td><?= esc($a['id']) ?></td>
-            <td><?= esc($a['patient_name'] ?? 'N/A') ?></td>
-            <td><?= esc($a['appointment_date'] ?? 'N/A') ?></td>
-            <td>
-              <span class="badge bg-<?= $a['status'] == 'completed' ? 'success' : 'warning' ?>">
-                <?= esc(ucfirst($a['status'])) ?>
-              </span>
-            </td>
-            <td><a href="<?= site_url('doctor/appointment/' . $a['id']) ?>" class="btn btn-sm btn-outline-primary">View</a></td>
-          </tr>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <tr><td colspan="5" class="text-center">No appointments yet.</td></tr>
-      <?php endif; ?>
-    </tbody>
-  </table>
 </div>
 
 </body>
 </html>
+

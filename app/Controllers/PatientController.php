@@ -55,16 +55,19 @@ class PatientController extends Controller
         }
 
         // Fetch visit history (doctor names + prescriptions)
-        $visits = $this->visitModel
-            ->select('visit_history.*, doctors.id as doctor_id, doctor_users.name as doctor_name, 
-                      prescriptions.id as prescription_id, prescriptions.prescription_text')
-            ->join('doctors', 'doctors.id = visit_history.doctor_id')
-            ->join('users as doctor_users', 'doctor_users.id = doctors.user_id')
-            ->join('prescriptions', 'prescriptions.visit_id = visit_history.id', 'left')
-            ->where('visit_history.patient_id', $patient['id'])
-        
-            ->get()
-            ->getResultArray();
+       $visits = $this->visitModel
+    ->select('visit_history.*, 
+              doctors.id as doctor_id, doctor_users.name as doctor_name, 
+              prescriptions.id as prescription_id, prescriptions.prescription_text,
+              bills.id as bill_id, bills.total_amount')
+    ->join('doctors', 'doctors.id = visit_history.doctor_id')
+    ->join('users as doctor_users', 'doctor_users.id = doctors.user_id')
+    ->join('prescriptions', 'prescriptions.visit_id = visit_history.id', 'left')
+    ->join('bills', 'bills.visit_id = visit_history.id', 'left')
+    ->where('visit_history.patient_id', $patient['id'])
+    ->get()
+    ->getResultArray();
+
 
         return view('patient/dashboard', [
             'patient' => $patient,
@@ -72,6 +75,44 @@ class PatientController extends Controller
         ]);
     }
 
+
+
+    public function viewBill($bill_id)
+{
+    $billModel = new \App\Models\BillModel();
+    $visitModel = new \App\Models\VisitHistoryModel();
+    $doctorModel = new \App\Models\DoctorModel();
+    $patientModel = new \App\Models\PatientModel();
+
+    $bill = $billModel->find($bill_id);
+    if (!$bill) {
+        return redirect()->back()->with('error', 'Bill not found.');
+    }
+
+    $visit = $visitModel->find($bill['visit_id']);
+    if (!$visit) {
+        return redirect()->back()->with('error', 'Visit not found.');
+    }
+
+    $doctor = $doctorModel
+        ->select('doctors.*, users.name as doctor_name')
+        ->join('users', 'users.id = doctors.user_id')
+        ->where('doctors.id', $visit['doctor_id'])
+        ->first();
+
+    $patient = $patientModel
+        ->select('patients.*, users.name as patient_name')
+        ->join('users', 'users.id = patients.user_id')
+        ->where('patients.id', $visit['patient_id'])
+        ->first();
+
+    return view('patient/view_bill', [
+        'bill' => $bill,
+        'visit' => $visit,
+        'doctor' => $doctor,
+        'patient' => $patient
+    ]);
+}
 
 
     // ✅ Prescription download
