@@ -24,7 +24,7 @@ $routes->get('superadmin/listAdmins', 'SuperAdminController::listAdmins');
 $routes->get('superadmin/editAdmin/(:num)', 'SuperAdminController::editAdmin/$1');
 $routes->post('superadmin/updateAdmin/(:num)', 'SuperAdminController::updateAdmin/$1');
 $routes->get('superadmin/deleteAdmin/(:num)', 'SuperAdminController::deleteAdmin/$1');
- $routes->get('superadmin/addAdmin', 'SuperAdminController::addAdmin');        // Show add admin form
+$routes->get('superadmin/addAdmin', 'SuperAdminController::addAdmin');        // Show add admin form
 $routes->post('superadmin/addAdminPost', 'SuperAdminController::addAdminPost');
 
 
@@ -98,7 +98,7 @@ $routes->get('superadmin/deletePatient/(:num)', 'SuperAdminController::deletePat
 
 
 
-$routes->group('admin', function($routes){
+$routes->group('admin', function ($routes) {
     $routes->get('dashboard', 'AdminController::dashboard');
     $routes->get('patients', 'AdminController::patients');
     $routes->get('patient/(:num)', 'AdminController::patient/$1');
@@ -109,11 +109,11 @@ $routes->group('admin', function($routes){
     $routes->get('patientProfile/(:num)', 'AdminController::patientProfile/$1');
 
     $routes->get('doctors', 'AdminController::doctors');                  // List all doctors
-$routes->get('doctorProfile/(:num)', 'AdminController::doctorProfile/$1'); // View single doctor
+    $routes->get('doctorProfile/(:num)', 'AdminController::doctorProfile/$1'); // View single doctor
 
 
-$routes->get('appointments', 'AdminController::appointments');           // List all appointments
-$routes->get('viewAppointment/(:num)', 'AdminController::viewAppointment/$1'); // View single appointment
+    $routes->get('appointments', 'AdminController::appointments');           // List all appointments
+    $routes->get('viewAppointment/(:num)', 'AdminController::viewAppointment/$1'); // View single appointment
 
 
 });
@@ -127,7 +127,7 @@ $routes->get('viewAppointment/(:num)', 'AdminController::viewAppointment/$1'); /
 
 
 // Doctor routes
-$routes->group('doctor', function($routes) {
+$routes->group('doctor', function ($routes) {
     $routes->get('dashboard', 'DoctorController::dashboard');
     $routes->get('patients', 'DoctorController::patients');
     $routes->get('patient/(:num)', 'DoctorController::patientProfile/$1');
@@ -138,66 +138,54 @@ $routes->group('doctor', function($routes) {
     $routes->post('updatePatient/(:num)', 'DoctorController::updatePatient/$1');
     $routes->get('appointments', 'DoctorController::appointments');
     $routes->get('appointment/(:num)', 'DoctorController::appointment/$1');
-     $routes->get('viewAppointment/(:num)', 'DoctorController::viewAppointment/$1');
+    $routes->get('viewAppointment/(:num)', 'DoctorController::viewAppointment/$1');
     $routes->post('addVisit/(:num)', 'DoctorController::addVisit/$1');
 
     $routes->get('addPrescription/(:num)', 'DoctorController::addPrescription/$1'); // appointment_id
-$routes->post('savePrescription', 'DoctorController::savePrescription');
-$routes->get('viewPrescription/(:num)', 'DoctorController::viewPrescription/$1'); // prescription_id
+    $routes->post('savePrescription', 'DoctorController::savePrescription');
+    $routes->get('viewPrescription/(:num)', 'DoctorController::viewPrescription/$1'); // prescription_id
 
 
-$routes->get('appointments', 'DoctorController::appointments');
-$routes->get('addAppointment', 'DoctorController::addAppointment'); // form
-$routes->post('saveAppointment', 'DoctorController::saveAppointment'); // submit
+    $routes->get('appointments', 'DoctorController::appointments');
+    $routes->get('addAppointment', 'DoctorController::addAppointment'); // form
+    $routes->post('saveAppointment', 'DoctorController::saveAppointment'); // submit
 
-// Doctor Billing Routes
-$routes->get('addBill/(:num)', 'DoctorController::addBill/$1');
-$routes->post('saveBill', 'DoctorController::saveBill');
-$routes->get('viewBill/(:num)', 'DoctorController::viewBill/$1');
+    // Doctor Billing Routes
+    $routes->get('addBill/(:num)', 'DoctorController::addBill/$1');
+    $routes->post('saveBill', 'DoctorController::saveBill');
+    $routes->get('viewBill/(:num)', 'DoctorController::viewBill/$1');
 
-$routes->get('markDone/(:num)', 'DoctorController::markDone/$1');
-$routes->get('cancelAppointment/(:num)', 'DoctorController::cancelAppointment/$1');
-$routes->get('reschedule/(:num)', 'DoctorController::reschedule/$1');
+    $routes->get('markDone/(:num)', 'DoctorController::markDone/$1');
+    $routes->get('cancelAppointment/(:num)', 'DoctorController::cancelAppointment/$1');
+    $routes->get('reschedule/(:num)', 'DoctorController::reschedule/$1');
 
-$routes->post('saveVisit', 'DoctorController::saveVisit');
+    $routes->post('saveVisit', 'DoctorController::saveVisit');
 
-$routes->post('updatePaymentStatus/(:num)', 'DoctorController::updatePaymentStatus/$1');
+    $routes->post('updatePaymentStatus/(:num)', 'DoctorController::updatePaymentStatus/$1');
 
-$routes->get('editBill/(:num)', 'DoctorController::editBill/$1');
-$routes->post('updateBill/(:num)', 'DoctorController::updateBill/$1');
-$routes->get('downloadBill/(:num)', 'DoctorController::downloadBill/$1');
-
-
-
-
-
+    $routes->get('editBill/(:num)', 'DoctorController::editBill/$1');
+    $routes->post('updateBill/(:num)', 'DoctorController::updateBill/$1');
+    $routes->get('downloadBill/(:num)', 'DoctorController::downloadBill/$1');
 });
 
 
 
 
 
-// $routes->group('patient', ['namespace' => 'App\Controllers'], function($routes) {
-//     $routes->get('dashboard', 'PatientController::dashboard');
-//     $routes->get('bookAppointment', 'PatientController::bookAppointment');
-//     $routes->post('bookAppointmentPost', 'PatientController::bookAppointmentPost');
-//     $routes->get('getDoctorsByHospital/(:num)', 'PatientController::getDoctorsByHospital/$1');
 
-// });
-
-$routes->get('visit-history', 'VisitHistoryController::index');
-$routes->get('visit-history/getTrendData', 'VisitHistoryController::getTrendData');
-
-
-$routes->group('patient', function($routes) {
+$routes->group('patient', function ($routes) {
     $routes->get('dashboard', 'PatientController::dashboard');
     $routes->get('downloadPrescription/(:num)', 'PatientController::downloadPrescription/$1');
 
-  $routes->get('bookAppointment', 'PatientController::bookAppointment');
+    $routes->get('bookAppointment', 'PatientController::bookAppointment');
     $routes->post('saveAppointment', 'PatientController::saveAppointment');
     $routes->get('viewBill/(:num)', 'PatientController::viewBill/$1');
+    $routes->get('upcomingAppointments', 'PatientController::upcomingAppointments');
+    $routes->get('cancelAppointment/(:num)', 'PatientController::cancelAppointment/$1');
 
-    
+    $routes->get('rescheduleAppointment/(:num)', 'PatientController::rescheduleAppointment/$1');
+    $routes->post('updateReschedule/(:num)', 'PatientController::updateReschedule/$1');
+
+
+    $routes->get('completedAppointments', 'PatientController::completedAppointments');
 });
-
-

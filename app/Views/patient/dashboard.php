@@ -22,6 +22,50 @@
 
     <hr>
 
+
+      <?php if ($hospital): ?>
+  <div class="card shadow-sm mt-4">
+    <div class="card-header bg-info text-white" >
+      <strong>Hospital Details</strong>
+    </div>
+    <div class="card-body">
+      <p><strong>Name:</strong> <?= esc($hospital['name']) ?></p>
+      <p><strong>Address:</strong> <?= esc($hospital['address'] ?? 'N/A') ?></p>
+      <p><strong>Email:</strong> <?= esc($hospital['email'] ?? 'N/A') ?></p>
+      <p><strong>Phone:</strong> <?= esc($hospital['contact'] ?? 'N/A') ?></p>
+    </div>
+  </div>
+  <?php else: ?>
+  <p class="text-danger mt-3">⚠️ No hospital details found for your account.</p>
+  <?php endif; ?>
+
+
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card text-center shadow-sm" style="cursor: pointer;" 
+         onclick="window.location='<?= site_url('patient/upcomingAppointments') ?>'">
+      <div class="card-body">
+        <h4 class="text-warning"><?= esc($totalUpcoming) ?></h4>
+        <p class="card-text fw-bold">Upcoming Appointments</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card text-center shadow-sm" style="cursor: pointer;" 
+         onclick="window.location='<?= site_url('patient/completedAppointments') ?>'">
+      <div class="card-body">
+        <h4 class="text-success"><?= esc($totalCompleted) ?></h4>
+        <p class="card-text fw-bold">Completed Appointments</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+  
     <h4>Your Visit History</h4>
     <table class="table table-bordered bg-white">
         <thead class="table-dark">
@@ -67,6 +111,8 @@
             <?php endif; ?>
         </tbody>
     </table>
+
+
 
     <div class="d-flex justify-content-between align-items-center mb-3">
     <h4>Your Visit History</h4>
