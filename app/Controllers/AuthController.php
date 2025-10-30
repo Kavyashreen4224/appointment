@@ -140,48 +140,6 @@ public function login()
 }
 
 
-    // 🔹 Handle Login
-//    public function loginPost()
-// {
-//     $email = $this->request->getPost('email');
-//     $password = $this->request->getPost('password');
-//     $hospital_id = $this->request->getPost('hospital_id'); // may be null for superadmin
-
-//     // Fetch user
-//     $user = $this->userModel->where('email', $email)->first();
-
-//     if ($user && password_verify($password, $user['password'])) {
-
-//         // For non-superadmin, ensure hospital matches
-//         if ($user['role'] !== 'superadmin' && $user['hospital_id'] != $hospital_id) {
-//             return redirect()->back()->with('error', 'Invalid hospital for this user.');
-//         }
-
-//         // Set session
-//         $this->session->set([
-//             'user_id' => $user['id'],
-//             'name' => $user['name'],
-//             'role' => $user['role'],
-//             'hospital_id' => $user['role'] === 'superadmin' ? null : $user['hospital_id'],
-//             'logged_in' => true
-//         ]);
-
-//         // Redirect based on role
-//         switch($user['role']) {
-//             case 'superadmin':
-//                 return redirect()->to('/superadmin/dashboard');
-//             case 'admin':
-//                 return redirect()->to('/admin/dashboard');
-//             case 'doctor':
-//                 return redirect()->to('/doctor/dashboard');
-//             case 'patient':
-//                 return redirect()->to('/patient/dashboard');
-//         }
-
-//     } else {
-//         return redirect()->back()->with('error', 'Invalid credentials');
-//     }
-// }
 
 public function loginPost()
 {
@@ -228,8 +186,6 @@ public function loginPost()
             return redirect()->back()->with('error', 'Role not recognized.');
     }
 }
-
-
 
 
 

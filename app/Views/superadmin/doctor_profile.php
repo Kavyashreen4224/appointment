@@ -71,6 +71,7 @@
                                     class="btn btn-success btn-sm">Done</a>
 
                                 <a href="<?= site_url('superadmin/cancelAppointment/' . $a['id']) ?>" class="btn btn-danger btn-sm">Cancel</a>
+                                <a href="<?= site_url('superadmin/rescheduleAppointment/'.$a['id']) ?>" class="btn btn-info btn-sm">Reschedule</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -90,7 +91,7 @@
                         <th>email</th>
                         <th>Start</th>
                         <th>End</th>
-                        <th>Status</th>
+                        <th>action</th>
 
                     </tr>
                 </thead>
@@ -136,7 +137,7 @@
                         <th>email</th>
                         <th>Start</th>
                         <th>End</th>
-                        <th>Status</th>
+                        <th>action</th>
                     </tr>
                 </thead>
                 <tbody>

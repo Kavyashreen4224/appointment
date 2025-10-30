@@ -14,6 +14,7 @@ $routes->post('auth/loginPost', 'AuthController::loginPost');
 $routes->get('logout', 'AuthController::logout');
 
 
+
 $routes->get('superadmin/dashboard', 'SuperAdminController::dashboard');
 $routes->get('superadmin/addHospital', 'SuperAdminController::addHospital');
 $routes->post('superadmin/saveHospital', 'SuperAdminController::saveHospital');
@@ -75,8 +76,6 @@ $routes->get('superadmin/viewPrescription/(:num)', 'SuperAdminController::viewPr
 $routes->get('superadmin/downloadPrescription/(:num)', 'SuperAdminController::downloadPrescription/$1');
 
 
-
-
 // Patient profile with visit history
 
 $routes->get('superadmin/patientProfile/(:num)', 'SuperadminController::patientProfile/$1');
@@ -106,9 +105,7 @@ $routes->group('admin', function ($routes) {
     $routes->get('appointments', 'AdminController::appointments');
     $routes->get('viewPrescription/(:num)', 'AdminController::viewPrescription/$1');
 
-    $routes->get('patientProfile/(:num)', 'AdminController::patientProfile/$1');
-
-    $routes->get('doctors', 'AdminController::doctors');                  // List all doctors
+    $routes->get('patientProfile/(:num)', 'AdminController::patientProfile/$1');                 // List all doctors
     $routes->get('doctorProfile/(:num)', 'AdminController::doctorProfile/$1'); // View single doctor
 
 

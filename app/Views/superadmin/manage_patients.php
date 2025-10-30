@@ -39,7 +39,9 @@
                     <td><?= esc($p['gender']) ?></td>
                     <td>
                         <a href="<?= site_url('superadmin/editPatient/'.$p['id']) ?>" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="<?= site_url('superadmin/deletePatient/'.$p['id']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
                     </td>
+
                 </tr>
             <?php endforeach; ?>
         </tbody>

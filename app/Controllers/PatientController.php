@@ -347,6 +347,7 @@ public function completedAppointments()
             ->select('doctors.id, users.name as doctor_name, doctors.hospital_id, doctors.expertise, hospitals.name as hospital_name')
             ->join('users', 'users.id = doctors.user_id')
             ->join('hospitals', 'hospitals.id = doctors.hospital_id')
+            ->where('availability','yes')
             ->findAll();
 
         return view('patient/book_appointment', [

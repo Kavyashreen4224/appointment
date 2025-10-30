@@ -102,7 +102,7 @@
 <body>
     <div class="landing-container">
         <h1>Welcome to HealthCare Portal</h1>
-        <p>Manage appointments, doctors, and patients easily. Multi-role & multi-hospital support included.</p>
+        <p>Manage appointments, doctors, and patients easily. Multi-role & multi-hospital support Management.</p>
         <div class="buttons">
             <a href="<?= site_url('register') ?>" class="btn-register">Register</a>
             <a href="<?= site_url('login') ?>" class="btn-login">Login</a>

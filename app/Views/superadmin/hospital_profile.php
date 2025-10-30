@@ -43,7 +43,7 @@
             <td><?= $i + 1 ?></td>
            <td>
   <a href="<?= site_url('superadmin/adminProfiles/'.$admin['id']) ?>">
-    <?= esc($admin['name'] ?? $admin['username']) ?>
+    <?= esc($admin['name']) ?>
   </a>
 </td>
 
