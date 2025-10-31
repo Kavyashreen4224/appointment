@@ -59,7 +59,7 @@
         </tbody>
     </table>
 
-    <a href="<?= site_url('admin/appointments') ?>" class="btn btn-secondary mt-3">Back to Appointments</a>
+    <a href="<?= site_url('admin/doctorProfile.$appointment') ?>" class="btn btn-secondary mt-3">Back to doctors profile</a>
 </div>
 </body>
 </html>

@@ -36,7 +36,7 @@
             <select name="patient_id" class="form-control" required>
                 <option value="">Select Patient</option>
                 <?php foreach($patients as $p): ?>
-                    <option value="<?= esc($p['user_id']) ?>"><?= esc($p['name']) ?></option>
+                    <option value="<?= esc($p['id']) ?>"><?= esc($p['name']) ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
