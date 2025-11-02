@@ -1,66 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Doctor Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    .card-link {
-      text-decoration: none;
-      color: inherit;
-    }
-    .card-link:hover .card {
-      transform: scale(1.03);
-      transition: transform 0.2s ease-in-out;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
-    }
-  </style>
-</head>
-<body class="bg-light">
+<?= $this->extend('layouts/doctor_layout') ?>
+<?= $this->section('content') ?>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container">
-    <a class="navbar-brand" href="#">Doctor Dashboard</a>
-    <div class="ms-auto">
-      <a href="<?= site_url('doctor/patients') ?>" class="btn btn-light btn-sm">Patients</a>
-      <a href="<?= site_url('doctor/appointments') ?>" class="btn btn-light btn-sm">Appointments</a>
-      <a href="<?= site_url('logout') ?>" class="btn btn-danger btn-sm">Logout</a>
+<h2 class="mb-4">Welcome, Dr. <?= esc($doctor['doctor_name']) ?> 👋</h2>
+
+<?php if (!empty($hospital)): ?>
+  <div class="alert alert-info">
+    <strong>Hospital:</strong> <?= esc($hospital['name']) ?><br>
+    <strong>Address:</strong> <?= esc($hospital['address']) ?><br>
+    <strong>Contact:</strong> <?= esc($hospital['contact']) ?><br>
+    <strong>Email:</strong> <?= esc($hospital['email']) ?>
+  </div>
+<?php endif; ?>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card text-center p-3 shadow-sm">
+      <h5>Total Appointments</h5>
+      <h2><?= esc($appointmentCount) ?></h2>
+      <a href="<?= site_url('doctor/appointments') ?>" class="btn btn-primary btn-sm mt-2">View</a>
     </div>
   </div>
-</nav>
 
-<div class="container mt-5">
-  <h3>Welcome Dr. <?= esc($doctor['name']) ?></h3>
-  <p class="text-muted">Email: <?= esc($doctor['email']) ?></p>
-  <p class="text-muted">Hospital: <?= esc($doctor['hospital_name']) ?></p>
-
-  <div class="row mt-4">
-    <!-- ✅ Clickable Patients Card -->
-    <div class="col-md-4">
-      <a href="<?= site_url('doctor/patients') ?>" class="card-link">
-        <div class="card text-center shadow-sm">
-          <div class="card-body">
-            <h4 class="card-title text-primary"><?= esc($total_patients) ?></h4>
-            <p class="card-text">Total Patients</p>
-          </div>
-        </div>
-      </a>
-    </div>
-
-    <!-- ✅ Clickable Appointments Card -->
-    <div class="col-md-4">
-      <a href="<?= site_url('doctor/appointments') ?>" class="card-link">
-        <div class="card text-center shadow-sm">
-          <div class="card-body">
-            <h4 class="card-title text-success"><?= esc($total_appointments) ?></h4>
-            <p class="card-text">Appointments</p>
-          </div>
-        </div>
-      </a>
+  <div class="col-md-6">
+    <div class="card text-center p-3 shadow-sm">
+      <h5>Patients Seen</h5>
+      <h2><?= esc($patientCount) ?></h2>
+      <a href="<?= site_url('doctor/patients') ?>" class="btn btn-primary btn-sm mt-2">View</a>
     </div>
   </div>
 </div>
 
-</body>
-</html>
+<h4 class="mt-5">Upcoming Appointments</h4>
+<table class="table table-bordered bg-white">
+  <thead class="table-dark">
+    <tr>
+      <th>Patient</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php if (!empty($upcomingAppointments)): ?>
+      <?php foreach ($upcomingAppointments as $app): ?>
+        <tr>
+          <td><?= esc($app['patient_name']) ?></td>
+          <td><?= esc($app['start_datetime']) ?></td>
+          <td><?= esc($app['end_datetime']) ?></td>
+          <td><?= esc(ucfirst($app['status'])) ?></td>
+        </tr>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <tr><td colspan="4" class="text-center">No upcoming appointments</td></tr>
+    <?php endif; ?>
+  </tbody>
+</table>
 
+<?= $this->endSection() ?>

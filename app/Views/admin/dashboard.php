@@ -1,49 +1,41 @@
 <?= $this->extend('layouts/admin_layout') ?>
 <?= $this->section('content') ?>
 
-<div class="container mt-4">
-    <h2>Hospital Dashboard</h2>
+<h2 class="mb-4">Welcome, Admin 👋</h2>
 
-    <div class="row mt-4">
-        <div class="col-md-3">
-            <div class="card text-center bg-primary text-white">
-                <div class="card-body">
-                    <h5>Total Doctors</h5>
-                    <h3><?= esc($totalDoctors) ?></h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center bg-success text-white">
-                <div class="card-body">
-                    <h5>Total Patients</h5>
-                    <h3><?= esc($totalPatients) ?></h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center bg-warning text-dark">
-                <div class="card-body">
-                    <h5>Total Appointments</h5>
-                    <h3><?= esc($totalAppointments) ?></h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center bg-danger text-white">
-                <div class="card-body">
-                    <h5>Total Visits</h5>
-                    <h3><?= esc($totalVisits) ?></h3>
-                </div>
-            </div>
-        </div>
-    </div>
+<?php if (!empty($hospital)): ?>
+  <div class="alert alert-info">
+    <strong>Hospital:</strong> <?= esc($hospital['name']) ?><br>
+    <strong>Address:</strong> <?= esc($hospital['address']) ?><br>
+    <strong>Contact:</strong> <?= esc($hospital['contact']) ?><br>
+    <strong>Email:</strong> <?= esc($hospital['email']) ?>
+  </div>
+<?php endif; ?>
 
-    <div class="mt-5">
-        <a href="<?= site_url('admin/patients') ?>" class="btn btn-primary">View Patients</a>
-        <a href="<?= site_url('admin/doctors') ?>" class="btn btn-secondary">View Doctors</a>
-        <a href="<?= site_url('admin/appointments') ?>" class="btn btn-success">View Appointments</a>
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card text-center p-3 shadow-sm">
+      <h5>Doctors</h5>
+      <h2><?= esc($doctorCount) ?></h2>
+      <a href="<?= site_url('admin/listDoctors') ?>" class="btn btn-primary btn-sm mt-2">Manage</a>
     </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card text-center p-3 shadow-sm">
+      <h5>Patients</h5>
+      <h2><?= esc($patientCount) ?></h2>
+      <a href="<?= site_url('admin/listPatients') ?>" class="btn btn-primary btn-sm mt-2">Manage</a>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card text-center p-3 shadow-sm">
+      <h5>Appointments</h5>
+      <h2><?= esc($appointmentCount) ?></h2>
+      <a href="<?= site_url('admin/listAppointments') ?>" class="btn btn-primary btn-sm mt-2">Manage</a>
+    </div>
+  </div>
 </div>
 
 <?= $this->endSection() ?>

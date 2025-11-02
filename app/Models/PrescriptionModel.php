@@ -12,7 +12,8 @@ class PrescriptionModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['appointment_id', 'visit_id', 'patient_id', 'doctor_id', 'prescription_text', 'created_at'];
+    protected $allowedFields    = [  'visit_id', 'doctor_id', 'patient_id', 'notes',
+        'created_at', 'updated_at'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

@@ -12,9 +12,9 @@ class BillModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = [ 'appointment_id', 'visit_id', 'patient_id', 'doctor_id', 'hospital_id',
-        'consultation_fee', 'services', 'total_amount',
-        'payment_status', 'payment_mode', 'payment_date'];
+    protected $allowedFields    = [   'appointment_id', 'visit_id', 'patient_id', 'doctor_id',
+        'consultation_fee', 'total_amount', 'payment_status',
+        'payment_mode', 'payment_date', 'created_at', 'updated_at'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

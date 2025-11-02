@@ -1,34 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Superadmin Dashboard</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title><?= $title ?? 'SuperAdmin Panel' ?></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #343a40;
+      color: #fff;
+      padding-top: 20px;
+    }
+    .sidebar a {
+      color: #ddd;
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      background-color: #495057;
+      color: #fff;
+    }
+    .active-link {
+      background-color: #0d6efd;
+      color: #fff !important;
+    }
+  </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="<?= site_url('superadmin/dashboard') ?>">Superadmin Panel</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <span class="nav-link text-white"><?= session()->get('name') ?></span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= site_url('auth/logout') ?>">Logout</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mt-4">
-        <?= $this->renderSection('content') ?>
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand ms-3" href="<?= site_url('superadmin/dashboard') ?>">SuperAdmin Panel</a>
+      <div class="d-flex me-3">
+        <a href="<?= site_url('logout') ?>" class="btn btn-danger btn-sm">Logout</a>
+      </div>
     </div>
+  </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+   <div class="col-md-3 col-lg-2 sidebar">
+  <a href="<?= site_url('superadmin/dashboard') ?>" class="<?= (uri_string()=='superadmin/dashboard') ? 'active-link' : '' ?>">Dashboard</a>
+  <a href="<?= site_url('superadmin/listHospitals') ?>" class="<?= (uri_string()=='superadmin/listHospitals') ? 'active-link' : '' ?>">Hospitals</a>
+  <a href="<?= site_url('superadmin/listAdmins') ?>" class="<?= (uri_string()=='superadmin/listAdmins') ? 'active-link' : '' ?>">Admins</a>
+  <a href="<?= site_url('superadmin/listDoctors') ?>" class="<?= (uri_string()=='superadmin/listDoctors') ? 'active-link' : '' ?>">Doctors</a>
+  <a href="<?= site_url('superadmin/listPatients') ?>" class="<?= (uri_string()=='superadmin/listPatients') ? 'active-link' : '' ?>">Patients</a>
+  <a href="<?= site_url('superadmin/listAppointments') ?>" class="<?= (uri_string()=='superadmin/listAppointments') ? 'active-link' : '' ?>">Appointments</a>
+  <a href="<?= site_url('logout') ?>" class="text-danger">Logout</a>
+</div>
+
+
+      <!-- Main content -->
+      <div class="col-md-9 col-lg-10 p-4">
+        <?= $this->renderSection('content') ?>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -12,8 +12,8 @@ class BillServiceModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['bill_id', 'service_id', 'service_name', 'price','created_at', 
-'updated_at'];
+    protected $allowedFields    = [ 'bill_id', 'hospital_service_id', 'service_name', 
+        'price', 'quantity', 'created_at', 'updated_at'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

@@ -12,9 +12,9 @@ class VisitHistoryModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = [ 'appointment_id','patient_id','doctor_id',
-    'reason','weight','blood_pressure','doctor_comments',
-    'created_at','updated_at','deleted_at'];
+    protected $allowedFields    = [  'appointment_id', 'patient_id', 'doctor_id',
+        'complaints', 'diagnosis', 'weight', 'blood_pressure', 
+        'doctor_comments', 'created_at', 'updated_at', 'deleted_at'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

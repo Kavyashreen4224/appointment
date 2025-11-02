@@ -1,49 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Add Patient</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+<?= $this->extend('layouts/doctor_layout') ?>
+<?= $this->section('content') ?>
 
-<div class="container mt-5">
-  <h3>Add Patient</h3>
-  <form action="<?= site_url('doctor/savePatient') ?>" method="post" class="mt-4 bg-white p-4 rounded shadow-sm">
-
-    <div class="mb-3">
-      <label>Name</label>
-      <input type="text" name="name" class="form-control" required>
-    </div>
-
-    <div class="mb-3">
-      <label>Email</label>
-      <input type="email" name="email" class="form-control" required>
-    </div>
-
-    <div class="mb-3">
-      <label>Age</label>
-      <input type="number" name="age" class="form-control" required>
-    </div>
-
-    <div class="mb-3">
-      <label>Gender</label>
-      <select name="gender" class="form-control">
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
-
-    <div class="mb-3">
-      <label>Password</label>
-      <input type="password" name="password" class="form-control" required>
-    </div>
-
-    <button type="submit" class="btn btn-success">Add Patient</button>
-    <a href="<?= site_url('doctor/patients') ?>" class="btn btn-secondary">Cancel</a>
-  </form>
+<div class="container mt-4">
+    <h2>Add New Patient</h2>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
+    <?php endif; ?>
+    
+    <form method="post" action="<?= site_url('doctor/savePatient') ?>">
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Age</label>
+            <input type="number" name="age" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Gender</label>
+            <select name="gender" class="form-select" required>
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Patient</button>
+    </form>
 </div>
 
-</body>
-</html>
+<?= $this->endSection() ?>
