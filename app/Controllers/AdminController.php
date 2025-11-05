@@ -22,19 +22,14 @@ class AdminController extends Controller
         }
 
         $db = \Config\Database::connect();
-        $userId = $session->get('id');
+ 
+        $hospitalId = $session->get('hospital_id');
+        $hospitalUserId = $session->get('hospital_user_id');
 
-        // ✅ Step 1: Get admin's hospital_id
-        $hospitalUser = $db->table('hospital_users')
-            ->where(['user_id' => $userId, 'role' => 'admin'])
-            ->get()
-            ->getRowArray();
-
-        if (!$hospitalUser) {
-            return redirect()->to('/login')->with('error', 'Hospital association not found.');
+        if (!$hospitalId) {
+            return redirect()->to('/login')->with('error', 'Hospital not found in session.');
         }
 
-        $hospitalId = $hospitalUser['hospital_id'];
 
         // ✅ Step 2: Count doctors under this hospital
         $doctorCount = $db->query("
@@ -68,6 +63,8 @@ class AdminController extends Controller
             'doctorCount' => $doctorCount,
             'patientCount' => $patientCount,
             'appointmentCount' => $appointmentCount,
+            'adminName' => $session->get('name'),      // ✅ added
+            'adminEmail' => $session->get('email'), 
         ]);
     }
 
@@ -82,17 +79,12 @@ public function listDoctors()
 
     $db = \Config\Database::connect();
 
-    // Get admin's hospital_id
-    $hospitalUser = $db->table('hospital_users')
-        ->where(['user_id' => $userId, 'role' => 'admin'])
-        ->get()
-        ->getRowArray();
+        $hospitalId = $session->get('hospital_id');
 
-    if (!$hospitalUser) {
+    if (!$hospitalId) {
         return redirect()->to('/login')->with('error', 'Hospital association not found.');
     }
 
-    $hospitalId = $hospitalUser['hospital_id'];
 
     // Fetch all doctors in that hospital
     $query = $db->query("
@@ -121,8 +113,8 @@ public function saveDoctor()
     $db->transStart();
 
     // Get admin hospital
-    $hospitalUser = $db->table('hospital_users')->where(['user_id' => $userId, 'role' => 'admin'])->get()->getRowArray();
-    $hospitalId = $hospitalUser['hospital_id'];
+    $hospitalId = $session->get('hospital_id');
+
 
     // Step 1: Insert user
     $userData = [
@@ -343,12 +335,12 @@ public function listPatients()
     $userId = $session->get('id');
 
     // Find admin’s hospital
-    $hospitalUser = $db->table('hospital_users')->where(['user_id' => $userId, 'role' => 'admin'])->get()->getRowArray();
-    if (!$hospitalUser) {
+   $hospitalId = $session->get('hospital_id');
+
+    if (!$hospitalId) {
         return redirect()->to('/admin/dashboard')->with('error', 'Hospital association not found.');
     }
 
-    $hospitalId = $hospitalUser['hospital_id'];
 
     // Fetch patients of this hospital
     $patients = $db->query("
@@ -375,49 +367,83 @@ public function addPatient()
 
 public function addPatientPost()
 {
-    $session = session();
     $db = \Config\Database::connect();
-
-    $userModel = new UserModel();
-    $hospitalUserModel = new HospitalUserModel();
-    $patientModel = new PatientModel();
-
-    $userId = $session->get('id');
-    $hospitalUser = $db->table('hospital_users')->where(['user_id' => $userId, 'role' => 'admin'])->get()->getRowArray();
-    $hospitalId = $hospitalUser['hospital_id'];
-
+    $session = session();
     $db->transStart();
 
-    // Step 1: Insert into users
-    $userData = [
-        'name' => $this->request->getPost('name'),
-        'email' => $this->request->getPost('email'),
-        'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-        'role' => 'patient',
-    ];
-    $userModel->insert($userData);
-    $newUserId = $userModel->getInsertID();
+    $name = $this->request->getPost('name');
+    $email = $this->request->getPost('email');
+    $password = password_hash($this->request->getPost('password') ?: '123456', PASSWORD_DEFAULT);
+    $age = $this->request->getPost('age');
+    $gender = $this->request->getPost('gender');
 
-    // Step 2: Insert into hospital_users
-    $hospitalUserModel->insert([
-        'user_id' => $newUserId,
-        'hospital_id' => $hospitalId,
-        'role' => 'patient',
-        'status' => 'active',
-    ]);
-    $userHospitalId = $hospitalUserModel->getInsertID();
+    $hospital_id = $session->get('hospital_id');
+    $created_by = $session->get('id'); // logged-in admin user ID
 
-    // Step 3: Insert into patients
-    $patientModel->insert([
-        'user_hospital_id' => $userHospitalId,
-        'age' => $this->request->getPost('age'),
-        'gender' => $this->request->getPost('gender'),
-    ]);
+    try {
+        // ✅ Step 1: Check if user already exists by email
+        $existingUser = $db->table('users')->where('email', $email)->get()->getRowArray();
 
-    $db->transComplete();
+        if ($existingUser) {
+            $user_id = $existingUser['id'];
+        } else {
+            // 🆕 Create new user if not found
+            $db->table('users')->insert([
+                'name' => $name,
+                'email' => $email,
+                'password' => $password,
+                'role' => 'patient',
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+            $user_id = $db->insertID();
+        }
 
-    return redirect()->to('/admin/listPatients')->with('success', 'Patient added successfully.');
+        // ✅ Step 2: Check if mapping already exists for this hospital & role
+        $existingMap = $db->table('hospital_users')
+            ->where([
+                'user_id' => $user_id,
+                'hospital_id' => $hospital_id,
+                'role' => 'patient'
+            ])
+            ->get()
+            ->getRowArray();
+
+        if ($existingMap) {
+            $db->transRollback();
+            return redirect()->back()->with('error', 'This patient is already linked to this hospital.');
+        }
+
+        // ✅ Step 3: Create hospital_users mapping
+        $db->table('hospital_users')->insert([
+            'user_id' => $user_id,
+            'hospital_id' => $hospital_id,
+            'role' => 'patient',
+            'status' => 'active',
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+        $user_hospital_id = $db->insertID();
+
+        // ✅ Step 4: Create patient record
+        $db->table('patients')->insert([
+            'user_hospital_id' => $user_hospital_id,
+            'age' => $age,
+            'gender' => $gender,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            throw new \Exception('Database transaction failed.');
+        }
+
+        return redirect()->to('/admin/listPatients')->with('success', 'Patient added successfully!');
+    } catch (\Exception $e) {
+        $db->transRollback();
+        return redirect()->back()->with('error', $e->getMessage());
+    }
 }
+
 
 public function editPatient($id)
 {
@@ -503,16 +529,14 @@ public function listAppointments()
     $userId = $session->get('id');
 
     // ✅ Find the admin's hospital_id
-    $hospitalUser = $db->table('hospital_users')
-        ->where(['user_id' => $userId, 'role' => 'admin'])
-        ->get()
-        ->getRowArray();
+   $hospitalId = $session->get('hospital_id');
 
-    if (!$hospitalUser) {
+
+    if (!$hospitalId) {
         return redirect()->to('/login')->with('error', 'Hospital not found for this admin.');
     }
 
-    $hospitalId = $hospitalUser['hospital_id'];
+
 
     // ✅ Filters
     $doctorId = $this->request->getGet('doctor_id');

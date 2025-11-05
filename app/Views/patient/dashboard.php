@@ -1,226 +1,160 @@
-<?php helper('form'); ?>
-<!DOCTYPE html>
-<html lang="en">
+<?= $this->extend('layouts/patient_layout') ?>
+<?= $this->section('content') ?>
 
-<head>
-    <meta charset="UTF-8">
-    <title>Patient Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        canvas {
-            max-width: 100%;
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-
-<body class="bg-light">
 <div class="container mt-4">
-    <h2>Welcome, <?= esc($patient['name']) ?></h2>
-    <p><strong>Email:</strong> <?= esc($patient['email']) ?></p>
 
-    <hr>
+  <h2 class="mb-3">Welcome, <?= esc($patient['patient_name']) ?> 👋</h2>
 
+  <!-- Patient Info -->
+  <div class="alert alert-info">
+    <strong>Hospital:</strong> <?= esc($hospital['name']) ?><br>
+    <strong>Email:</strong> <?= esc($patient['email']) ?><br>
+    <strong>Age:</strong> <?= esc($patient['age']) ?> |
+    <strong>Gender:</strong> <?= esc($patient['gender']) ?>
+  </div>
 
-      <?php if ($hospital): ?>
-  <div class="card shadow-sm mt-4">
-    <div class="card-header bg-info text-white" >
-      <strong>Hospital Details</strong>
+  
+
+  <!-- Quick Stats -->
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="card text-center p-3 shadow-sm">
+      <h5>Total</h5>
+      <h2><?= esc($totalAppointments) ?></h2>
     </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center p-3 shadow-sm">
+      <h5>Pending</h5>
+      <h2 class="text-warning"><?= esc($pendingAppointments) ?></h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center p-3 shadow-sm">
+      <h5>Completed</h5>
+      <h2 class="text-success"><?= esc($completedAppointments) ?></h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center p-3 shadow-sm">
+      <h5>Cancelled</h5>
+      <h2 class="text-danger"><?= esc($cancelledAppointments) ?></h2>
+    </div>
+  </div>
+</div>
+
+
+  <!-- 📅 Upcoming Appointments -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white"><strong>Upcoming Appointments</strong></div>
     <div class="card-body">
-      <p><strong>Name:</strong> <?= esc($hospital['name']) ?></p>
-      <p><strong>Address:</strong> <?= esc($hospital['address'] ?? 'N/A') ?></p>
-      <p><strong>Email:</strong> <?= esc($hospital['email'] ?? 'N/A') ?></p>
-      <p><strong>Phone:</strong> <?= esc($hospital['contact'] ?? 'N/A') ?></p>
-    </div>
-  </div>
-  <?php else: ?>
-  <p class="text-danger mt-3">⚠️ No hospital details found for your account.</p>
-  <?php endif; ?>
-
-
-
-<div class="row mt-4">
-  <div class="col-md-6">
-    <div class="card text-center shadow-sm" style="cursor: pointer;" 
-         onclick="window.location='<?= site_url('patient/upcomingAppointments') ?>'">
-      <div class="card-body">
-        <h4 class="text-warning"><?= esc($totalUpcoming) ?></h4>
-        <p class="card-text fw-bold">Upcoming Appointments</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-6">
-    <div class="card text-center shadow-sm" style="cursor: pointer;" 
-         onclick="window.location='<?= site_url('patient/completedAppointments') ?>'">
-      <div class="card-body">
-        <h4 class="text-success"><?= esc($totalCompleted) ?></h4>
-        <p class="card-text fw-bold">Completed Appointments</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-  
-
-  
-    <h4>Your Visit History</h4>
-    <table class="table table-bordered bg-white">
-        <thead class="table-dark">
+      <?php if (!empty($upcomingAppointments)): ?>
+        <table class="table table-bordered">
+          <thead class="table-light">
             <tr>
-                <th>Doctor</th>
-                <th>Reason</th>
-                <th>BP</th>
-                <th>Weight</th>
-                <th>Doctor Comments</th>
-                <th>Prescription</th>
-                <th>Bill</th> 
+              <th>#</th>
+              <th>Doctor</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Status</th>
             </tr>
-        </thead>
-        <tbody>
-            <?php if (!empty($visits)): ?>
-                <?php foreach ($visits as $visit): ?>
-                    <tr>
-                        <td><?= esc($visit['doctor_name']) ?></td>
-                        <td><?= esc($visit['reason']) ?></td>
-                        <td><?= esc($visit['blood_pressure']) ?></td>
-                        <td><?= esc($visit['weight']) ?></td>
-                        <td><?= esc($visit['doctor_comments']) ?></td>
-                        <td>
-                            <?php if (!empty($visit['prescription_id'])): ?>
-                                <a href="<?= site_url('patient/downloadPrescription/'.$visit['prescription_id']) ?>" 
-                                   class="btn btn-success btn-sm">Download</a>
-                            <?php else: ?>
-                                <span class="text-muted">No Prescription</span>
-                            <?php endif; ?>
-                        </td>
-                         <td>
-                        <?php if (!empty($visit['bill_id'])): ?>
-                            <a href="<?= site_url('patient/viewBill/'.$visit['bill_id']) ?>" 
-                               class="btn btn-primary btn-sm">View Bill</a>
-                        <?php else: ?>
-                            <span class="text-muted">No Bill</span>
-                        <?php endif; ?>
-                    </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr><td colspan="6" class="text-center">No visits found.</td></tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
+          </thead>
+          <tbody>
+            <?php foreach ($upcomingAppointments as $i => $a): ?>
+              <tr>
+                <td><?= $i + 1 ?></td>
+                <td><?= esc($a['doctor_name']) ?></td>
+                <td><?= date('d M Y', strtotime($a['start_datetime'])) ?></td>
+                <td><?= date('h:i A', strtotime($a['start_datetime'])) ?></td>
+                <td><span class="badge bg-warning text-dark"><?= ucfirst($a['status']) ?></span></td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      <?php else: ?>
+        <p class="text-muted mb-0">No upcoming appointments 🎉</p>
+      <?php endif; ?>
+    </div>
+  </div>
 
-
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4>Your Visit History</h4>
-    <a href="<?= site_url('patient/bookAppointment') ?>" class="btn btn-primary">
-        Book Appointment
-    </a>
-</div>
-
-    <?php if (!empty($visits)): ?>
-        <!-- Charts -->
-        <div class="row mt-5">
-            <div class="col-md-6">
-                <h5>Blood Pressure Over Time</h5>
-                <canvas id="bpChart" height="300"></canvas>
-            </div>
-            <div class="col-md-6">
-                <h5>Weight Over Time</h5>
-                <canvas id="weightChart" height="300"></canvas>
-            </div>
-        </div>
-
-        <script>
-            const visits = <?= json_encode($visits) ?>;
-            const dates = visits.map(v => v.created_at);
-            const bp = visits.map(v => parseFloat(v.blood_pressure));
-            const weight = visits.map(v => parseFloat(v.weight));
-            const doctors = visits.map(v => v.doctor_name || 'Unknown');
-
-            // BP Chart
-            const ctxBP = document.getElementById('bpChart').getContext('2d');
-            new Chart(ctxBP, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Blood Pressure',
-                        data: bp,
-                        borderColor: 'red',
-                        backgroundColor: 'rgba(255,0,0,0.2)',
-                        tension: 0.3,
-                        fill: true,
-                        pointRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const i = context.dataIndex;
-                                    return `BP: ${context.raw}, Doctor: ${doctors[i]}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Date' }
-                        },
-                        y: {
-                            title: { display: true, text: 'Blood Pressure' }
-                        }
-                    }
-                }
-            });
-
-            // Weight Chart
-            const ctxWeight = document.getElementById('weightChart').getContext('2d');
-            new Chart(ctxWeight, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Weight (kg)',
-                        data: weight,
-                        borderColor: 'blue',
-                        backgroundColor: 'rgba(0,0,255,0.2)',
-                        tension: 0.3,
-                        fill: true,
-                        pointRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const i = context.dataIndex;
-                                    return `Weight: ${context.raw} kg, Doctor: ${doctors[i]}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Date' }
-                        },
-                        y: {
-                            title: { display: true, text: 'Weight (kg)' }
-                        }
-                    }
-                }
-            });
-        </script>
-    <?php endif; ?>
+  <!-- 📊 Health Tracking Graphs -->
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5 class="text-center mb-3">Weight Trend (kg)</h5>
+        <canvas id="weightChart" height="150"></canvas>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5 class="text-center mb-3">Blood Pressure Trend (mmHg)</h5>
+        <canvas id="bpChart" height="150"></canvas>
+      </div>
+    </div>
+  </div>
 
 </div>
-</body>
-</html>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const dates = <?= $dates ?>;
+const weights = <?= $weights ?>;
+const systolic = <?= $bpSystolic ?>;
+const diastolic = <?= $bpDiastolic ?>;
+
+// Weight Chart
+new Chart(document.getElementById('weightChart'), {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: [{
+      label: 'Weight (kg)',
+      data: weights,
+      borderColor: '#28a745',
+      tension: 0.3,
+      fill: false,
+      pointRadius: 5,
+      borderWidth: 2
+    }]
+  },
+  options: {
+    scales: {
+      y: { beginAtZero: false }
+    }
+  }
+});
+
+// BP Chart
+new Chart(document.getElementById('bpChart'), {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: [
+      {
+        label: 'Systolic',
+        data: systolic,
+        borderColor: '#007bff',
+        tension: 0.3,
+        fill: false,
+        borderWidth: 2
+      },
+      {
+        label: 'Diastolic',
+        data: diastolic,
+        borderColor: '#dc3545',
+        tension: 0.3,
+        fill: false,
+        borderWidth: 2
+      }
+    ]
+  },
+  options: {
+    scales: {
+      y: { beginAtZero: false }
+    }
+  }
+});
+</script>
+
+<?= $this->endSection() ?>

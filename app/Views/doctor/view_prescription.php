@@ -16,7 +16,35 @@
     <div class="card">
         <div class="card-body">
             <h5>Prescription:</h5>
-            <p><?= nl2br(esc($prescription['prescription_text'])) ?></p>
+            <p><?= nl2br(esc($prescription['notes'])) ?></p>
+            <?php if (!empty($items)): ?>
+  <h5 class="mt-4">Prescribed Medicines</h5>
+  <table class="table table-bordered bg-white">
+    <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <th>Medicine</th>
+        <th>Dosage</th>
+        <th>Frequency</th>
+        <th>Duration</th>
+        <th>Instructions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($items as $index => $item): ?>
+        <tr>
+          <td><?= $index + 1 ?></td>
+          <td><?= esc($item['medicine_name']) ?></td>
+          <td><?= esc($item['dosage']) ?></td>
+          <td><?= esc($item['frequency']) ?></td>
+          <td><?= esc($item['duration']) ?></td>
+          <td><?= esc($item['usage_instruction']) ?></td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+<?php endif; ?>
+
         </div>
     </div>
 

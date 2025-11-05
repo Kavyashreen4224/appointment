@@ -2,96 +2,75 @@
 <?= $this->section('content') ?>
 
 <div class="container mt-4">
-    <h2 class="mb-4">Add Bill for Appointment #<?= esc($appointment['id']) ?></h2>
+  <h3>Add Bill</h3>
 
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
-    <?php endif; ?>
+  <form action="<?= site_url('doctor/saveBill') ?>" method="post">
+    <input type="hidden" name="appointment_id" value="<?= esc($appointment['id']) ?>">
+    <input type="hidden" name="patient_id" value="<?= esc($appointment['patient_id']) ?>">
+    <input type="hidden" name="doctor_id" value="<?= esc($appointment['doctor_id']) ?>">
 
-    <form action="<?= site_url('doctor/saveBill') ?>" method="post" id="billForm">
-        <input type="hidden" name="appointment_id" value="<?= esc($appointment['id']) ?>">
-
-        <div class="card p-4 shadow-sm">
-            <div class="mb-3">
-                <label class="form-label">Patient Name:</label>
-                <input type="text" class="form-control" value="<?= esc($appointment['patient_name']) ?>" readonly>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Consultation Fee (₹):</label>
-                <input type="number" class="form-control" name="consultation_fee" id="consultation_fee" value="500" min="0" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Select Services:</label><br>
-                <?php if (!empty($services)): ?>
-                    <?php foreach ($services as $service): ?>
-                        <div class="form-check">
-                            <input class="form-check-input service-checkbox"
-                                   type="checkbox"
-                                   name="services[]"
-                                   value="<?= esc($service['id']) ?>"
-                                   data-price="<?= esc($service['price']) ?>">
-                            <label class="form-check-label">
-                                <?= esc($service['name']) ?> (₹<?= esc($service['price']) ?>)
-                            </label>
-                        </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <p class="text-muted">No additional services available.</p>
-                <?php endif; ?>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Total Amount (₹):</label>
-                <input type="text" class="form-control" id="total_amount" value="500" readonly>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Payment Status:</label>
-                <select name="payment_status" class="form-select" required>
-                    <option value="Pending">Pending</option>
-                    <option value="Paid">Paid</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Payment Mode:</label>
-                <select name="payment_mode" class="form-select" required>
-                    <option value="Cash">Cash</option>
-                    <option value="Card">Card</option>
-                    <option value="UPI">UPI</option>
-                    <option value="NetBanking">Net Banking</option>
-                    <option value="Insurance">Insurance</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Save Bill</button>
-            <a href="<?= site_url('doctor/appointments') ?>" class="btn btn-secondary">Back</a>
+    <div id="services-container">
+      <div class="service-row mb-3 border p-3 rounded bg-light">
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label">Service</label>
+            <select name="service_id[]" class="form-select service-select" required>
+              <option value="">Select Service</option>
+              <?php foreach ($services as $s): ?>
+                <option value="<?= $s['doctor_service_id'] ?>" data-price="<?= $s['price'] ?>">
+                  <?= esc($s['service_name']) ?> (₹<?= esc($s['price']) ?>)
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Quantity</label>
+            <input type="number" name="quantity[]" class="form-control quantity" value="1" min="1">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Amount (₹)</label>
+            <input type="text" class="form-control amount" readonly>
+          </div>
         </div>
-    </form>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-secondary mb-3" id="addServiceRow">+ Add More</button>
+
+    <div class="d-flex justify-content-between">
+      <h4>Total: ₹<span id="total">0</span></h4>
+      <button type="submit" class="btn btn-success">Save Bill</button>
+    </div>
+  </form>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const consultationInput = document.getElementById('consultation_fee');
-        const checkboxes = document.querySelectorAll('.service-checkbox');
-        const totalInput = document.getElementById('total_amount');
-
-        function calculateTotal() {
-            let total = parseFloat(consultationInput.value || 0);
-            checkboxes.forEach(cb => {
-                if (cb.checked) total += parseFloat(cb.dataset.price);
-            });
-            totalInput.value = total.toFixed(2);
-        }
-
-        consultationInput.addEventListener('input', calculateTotal);
-        checkboxes.forEach(cb => cb.addEventListener('change', calculateTotal));
-
-        calculateTotal();
+  function calculateTotal() {
+    let total = 0;
+    document.querySelectorAll('.service-row').forEach(row => {
+      const select = row.querySelector('.service-select');
+      const qty = parseInt(row.querySelector('.quantity').value) || 1;
+      const price = parseFloat(select.selectedOptions[0]?.getAttribute('data-price')) || 0;
+      const amount = price * qty;
+      row.querySelector('.amount').value = amount.toFixed(2);
+      total += amount;
     });
+    document.getElementById('total').innerText = total.toFixed(2);
+  }
+
+  document.addEventListener('change', e => {
+    if (e.target.classList.contains('service-select') || e.target.classList.contains('quantity')) {
+      calculateTotal();
+    }
+  });
+
+  document.getElementById('addServiceRow').addEventListener('click', () => {
+    const container = document.getElementById('services-container');
+    const firstRow = container.firstElementChild.cloneNode(true);
+    firstRow.querySelectorAll('input').forEach(i => i.value = i.classList.contains('quantity') ? 1 : '');
+    firstRow.querySelector('.service-select').selectedIndex = 0;
+    container.appendChild(firstRow);
+  });
 </script>
 
 <?= $this->endSection() ?>

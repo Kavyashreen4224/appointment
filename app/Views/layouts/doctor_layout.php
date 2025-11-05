@@ -28,6 +28,7 @@
       <a href="<?= site_url('doctor/dashboard') ?>" class="<?= (uri_string()=='doctor/dashboard') ? 'active-link' : '' ?>">Dashboard</a>
       <a href="<?= site_url('doctor/patients') ?>" class="<?= (uri_string()=='doctor/patients') ? 'active-link' : '' ?>">patients</a>
       <a href="<?= site_url('doctor/appointments') ?>" class="<?= (uri_string()=='doctor/appointments') ? 'active-link' : '' ?>">Appointments</a>
+      <a href="<?= site_url('doctor/services') ?>" class="<?= (uri_string()=='doctor/services') ? 'active-link' : '' ?>">My Services</a>
       <a href="<?= site_url('doctor/profile') ?>" class="<?= (uri_string()=='doctor/profile') ? 'active-link' : '' ?>">Profile</a>
     </div>
 

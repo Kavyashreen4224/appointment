@@ -181,32 +181,55 @@ public function saveAdmin()
     $created_by = session()->get('user_id'); // assuming SuperAdmin is logged in
 
     try {
-        // 1️⃣ Insert into users table
-        $db->table('users')->insert([
-            'name' => $name,
-            'email' => $email,
-            'password' => $password,
-            'role' => 'admin',
-            'created_at' => date('Y-m-d H:i:s'),
-        ]);
-        $user_id = $db->insertID();
+       // ✅ Check if user already exists by email
+$existingUser = $db->table('users')->where('email', $email)->get()->getRowArray();
 
-        // 2️⃣ Insert into hospital_users (link user to hospital)
-        $db->table('hospital_users')->insert([
-            'user_id' => $user_id,
-            'hospital_id' => $hospital_id,
-            'role' => 'admin',
-            'status' => 'active',
-            'created_at' => date('Y-m-d H:i:s'),
-        ]);
-        $user_hospital_id = $db->insertID();
+if ($existingUser) {
+    // ✅ Reuse existing user if role = admin
+    $user_id = $existingUser['id'];
+} else {
+    // 🆕 Create new user
+    $db->table('users')->insert([
+        'name' => $name,
+        'email' => $email,
+        'password' => $password,
+        'role' => 'admin',
+        'created_at' => date('Y-m-d H:i:s'),
+    ]);
+    $user_id = $db->insertID();
+}
 
-        // 3️⃣ Insert into admins (link to hospital_users)
-        $db->table('admins')->insert([
-            'user_hospital_id' => $user_hospital_id,
-            'created_by' => $created_by,
-            'created_at' => date('Y-m-d H:i:s'),
-        ]);
+// ✅ Check if already linked with this hospital
+$existingLink = $db->table('hospital_users')
+    ->where(['user_id' => $user_id, 'hospital_id' => $hospital_id, 'role' => 'admin'])
+    ->get()
+    ->getRowArray();
+
+if ($existingLink) {
+    $db->transRollback();
+    return redirect()->back()->with('error', 'This admin is already linked to the selected hospital.');
+}
+
+// ✅ Now create mapping in hospital_users
+$db->table('hospital_users')->insert([
+    'user_id' => $user_id,
+    'hospital_id' => $hospital_id,
+    'role' => 'admin',
+    'status' => 'active',
+    'created_at' => date('Y-m-d H:i:s'),
+]);
+$user_hospital_id = $db->insertID();
+
+// ✅ If admin not already in admins table, insert record
+$existingAdmin = $db->table('admins')->where('user_hospital_id', $user_hospital_id)->get()->getRowArray();
+if (!$existingAdmin) {
+    $db->table('admins')->insert([
+        'user_hospital_id' => $user_hospital_id,
+        'created_by' => $created_by,
+        'created_at' => date('Y-m-d H:i:s'),
+    ]);
+}
+
 
         $db->transComplete();
 

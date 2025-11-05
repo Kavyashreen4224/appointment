@@ -1,7 +1,17 @@
 <?= $this->extend('layouts/admin_layout') ?>
 <?= $this->section('content') ?>
 
-<h2 class="mb-4">Welcome, Admin 👋</h2>
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+  <div>
+    <h2 class="fw-bold text-primary mb-1">Welcome back, <?= esc($adminName) ?> 👋</h2>
+    <p class="text-muted mb-2">You are managing <strong><?= esc($hospital['name']) ?></strong></p>
+    <small class="text-secondary">Email: <?= esc($adminEmail) ?></small>
+  </div>
+  
+
+</div>
+
+
 
 <?php if (!empty($hospital)): ?>
   <div class="alert alert-info">

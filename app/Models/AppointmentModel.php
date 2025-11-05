@@ -10,9 +10,9 @@ class AppointmentModel extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = true;
+    protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = [  'doctor_id', 'patient_id', 'start_datetime', 'end_datetime',
+    protected $allowedFields    = [ 'hospital_id' ,'doctor_id', 'patient_id', 'start_datetime', 'end_datetime',
         'status', 'created_by', 'updated_by',
         'created_at', 'updated_at'];
 

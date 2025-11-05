@@ -90,14 +90,50 @@ $routes->get('listAppointments', 'AdminController::listAppointments');
 
 
 
-$routes->group('doctor', function ($routes) {
-
-    // Doctor Patient Management
-$routes->get('dashboard', 'DoctorController::dashboard');
+$routes->group('doctor', function($routes) {
     $routes->get('dashboard', 'DoctorController::dashboard');
     $routes->get('patients', 'DoctorController::patientsList');
     $routes->get('addPatient', 'DoctorController::addPatient');
     $routes->post('savePatient', 'DoctorController::savePatient');
+    $routes->get('editPatient/(:num)', 'DoctorController::editPatient/$1');
+    $routes->post('updatePatient/(:num)', 'DoctorController::updatePatient/$1');
+    $routes->get('deletePatient/(:num)', 'DoctorController::deletePatient/$1');
+
+
+    // Doctor Appointments Routes
+$routes->get('appointments', 'DoctorController::appointments');
+$routes->get('addAppointment', 'DoctorController::addAppointment');
+$routes->post('saveAppointment', 'DoctorController::saveAppointment');
+$routes->get('rescheduleAppointment/(:num)', 'DoctorController::rescheduleAppointment/$1');
+$routes->post('updateAppointment/(:num)', 'DoctorController::updateAppointment/$1');
+$routes->get('cancelAppointment/(:num)', 'DoctorController::cancelAppointment/$1');
+
+$routes->get('markDone/(:num)', 'DoctorController::markAsDone/$1');
+$routes->get('addVisit/(:num)', 'DoctorController::addVisit/$1');
+$routes->post('saveVisit', 'DoctorController::saveVisit');
+$routes->get('viewVisit/(:num)', 'DoctorController::viewVisit/$1');
+// Doctor Prescription Routes
+$routes->get('addPrescription/(:num)', 'DoctorController::addPrescription/$1'); // visit_id
+$routes->post('savePrescription', 'DoctorController::savePrescription');
+$routes->get('viewPrescription/(:num)', 'DoctorController::viewPrescription/$1'); // visit_id
+
+$routes->get('addBill/(:num)', 'DoctorController::addBill/$1');
+$routes->post('saveBill', 'DoctorController::saveBill');
+$routes->get('viewBill/(:num)', 'DoctorController::viewBill/$1');
+$routes->post('markBillPaid/(:num)', 'DoctorController::markBillPaid/$1');
+
+// Doctor Service Management
+$routes->get('services', 'DoctorController::services');
+$routes->get('addService', 'DoctorController::addService');
+$routes->post('saveService', 'DoctorController::saveService');
+$routes->get('editService/(:num)', 'DoctorController::editService/$1');
+$routes->post('updateService/(:num)', 'DoctorController::updateService/$1');
+$routes->get('deleteService/(:num)', 'DoctorController::deleteService/$1');
+
+$routes->get('profile', 'DoctorController::profile');
+$routes->post('updateProfile', 'DoctorController::updateProfile');
+
+
 });
 
 
@@ -110,7 +146,25 @@ $routes->get('dashboard', 'DoctorController::dashboard');
 
 
 
-$routes->get('patient/dashboard', 'PatientController::dashboard');
+
+
+
+$routes->group('patient', function ($routes) {
+    $routes->get('dashboard', 'PatientController::dashboard');
+    $routes->get('appointments', 'PatientController::appointments');
+    // ✅ Patient Views for completed appointments
+$routes->get('viewVisit/(:num)', 'PatientController::viewVisit/$1');
+$routes->get('viewPrescription/(:num)', 'PatientController::viewPrescription/$1');
+$routes->get('viewBill/(:num)', 'PatientController::viewBill/$1');
+
+     $routes->get('bookAppointment', 'PatientController::bookAppointment');
+    $routes->post('saveAppointment', 'PatientController::saveAppointment');
+    $routes->get('cancelAppointment/(:num)', 'PatientController::cancelAppointment/$1');
+
+    $routes->get('visitHistory', 'PatientController::visitHistory');
+
+
+});
 
 
 

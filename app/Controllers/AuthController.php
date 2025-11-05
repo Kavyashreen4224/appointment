@@ -25,92 +25,95 @@ class AuthController extends Controller
         return view('auth/register', $data);
     }
 
-    public function registerPost()
-    {
-        $userModel = new UserModel();
-        $hospitalUserModel = new HospitalUserModel();
-        $adminModel = new AdminModel();
-        $doctorModel = new DoctorModel();
-        $patientModel = new PatientModel();
+  public function registerPost()
+{
+    $userModel = new UserModel();
+    $hospitalUserModel = new HospitalUserModel();
+    $adminModel = new AdminModel();
+    $doctorModel = new DoctorModel();
+    $patientModel = new PatientModel();
 
-        $role = $this->request->getPost('role');
+    $role = $this->request->getPost('role');
+    $hospitalId = $this->request->getPost('hospital_id');
 
-        // Common user data
-        $userData = [
-            'name' => $this->request->getPost('name'),
-            'email' => $this->request->getPost('email'),
-            'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'role' => $role,
-        ];
+    $userData = [
+        'name' => $this->request->getPost('name'),
+        'email' => $this->request->getPost('email'),
+        'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+        'role' => $role,
+        'created_at' => date('Y-m-d H:i:s')
+    ];
 
-        $db = \Config\Database::connect();
-        $db->transStart();
+    $db = \Config\Database::connect();
+    $db->transStart();
 
-        // ✅ Step 1: Check duplicate user email
-        $existingUser = $userModel->where('email', $userData['email'])->first();
-        if ($existingUser) {
-            $db->transRollback();
-            return redirect()->back()->with('error', 'User with this email already exists.');
-        }
+    // ✅ Step 1: Check if user exists
+    $existingUser = $userModel->where('email', $userData['email'])->first();
 
-        // ✅ Step 2: Insert into users
-        $userModel->insert($userData);
-        $userId = $userModel->getInsertID();
+    if ($existingUser) {
+        $userId = $existingUser['id'];
 
-        // ✅ Step 3: If superadmin, done
-        if ($role === 'superadmin') {
-            $db->transComplete();
-            return redirect()->to('login')->with('success', 'SuperAdmin registered successfully!');
-        }
-
-        // ✅ Step 4: For admin / doctor / patient
-        $hospitalId = $this->request->getPost('hospital_id');
-
-        // Prevent duplicate hospital-user pair
+        // ✅ Check if already linked to this hospital for same role
         $existingHU = $hospitalUserModel
-            ->where(['user_id' => $userId, 'hospital_id' => $hospitalId])
+            ->where([
+                'user_id' => $userId,
+                'hospital_id' => $hospitalId,
+                'role' => $role
+            ])
             ->first();
+
         if ($existingHU) {
             $db->transRollback();
-            return redirect()->back()->with('error', 'User already registered for this hospital.');
+            return redirect()->back()->with('error', 'User already registered as ' . $role . ' for this hospital.');
         }
-
-        $hospitalUserData = [
-            'user_id' => $userId,
-            'hospital_id' => $hospitalId,
-            'role' => $role,
-            'status' => 'active',
-        ];
-        $hospitalUserModel->insert($hospitalUserData);
-        $userHospitalId = $hospitalUserModel->getInsertID();
-
-        // ✅ Step 5: Insert into specific role table
-        if ($role === 'admin') {
-            $adminModel->insert([
-                'user_hospital_id' => $userHospitalId,
-                'created_by' => $userId,
-                'updated_by' => $userId,
-            ]);
-        } elseif ($role === 'doctor') {
-            $doctorModel->insert([
-                'user_hospital_id' => $userHospitalId,
-                'age' => $this->request->getPost('age'),
-                'gender' => $this->request->getPost('gender'),
-                'expertise' => $this->request->getPost('expertise'),
-                'availability_type' => $this->request->getPost('availability_type'),
-            ]);
-        } elseif ($role === 'patient') {
-            $patientModel->insert([
-                'user_hospital_id' => $userHospitalId,
-                'age' => $this->request->getPost('age'),
-                'gender' => $this->request->getPost('gender'),
-            ]);
-        }
-
-        $db->transComplete();
-
-        return redirect()->to('login')->with('success', ucfirst($role) . ' registered successfully!');
+    } else {
+        // 🆕 New user
+        $userModel->insert($userData);
+        $userId = $userModel->getInsertID();
     }
+
+    // ✅ Step 2: Add to hospital_users
+    $hospitalUserModel->insert([
+        'user_id' => $userId,
+        'hospital_id' => $hospitalId,
+        'role' => $role,
+        'status' => 'active',
+        'created_at' => date('Y-m-d H:i:s')
+    ]);
+    $userHospitalId = $hospitalUserModel->getInsertID();
+
+    // ✅ Step 3: Add to specific role table
+    if ($role === 'admin') {
+        $adminModel->insert([
+            'user_hospital_id' => $userHospitalId,
+            'created_by' => $userId,
+            'updated_by' => $userId,
+        ]);
+    } elseif ($role === 'doctor') {
+        $doctorModel->insert([
+            'user_hospital_id' => $userHospitalId,
+            'age' => $this->request->getPost('age'),
+            'gender' => $this->request->getPost('gender'),
+            'expertise' => $this->request->getPost('expertise'),
+            'availability_type' => $this->request->getPost('availability_type'),
+        ]);
+    } elseif ($role === 'patient') {
+        $patientModel->insert([
+            'user_hospital_id' => $userHospitalId,
+            'age' => $this->request->getPost('age'),
+            'gender' => $this->request->getPost('gender'),
+        ]);
+    }
+
+    $db->transComplete();
+
+    if ($db->transStatus() === false) {
+        return redirect()->back()->with('error', 'Registration failed.');
+    }
+
+    return redirect()->to('login')->with('success', ucfirst($role) . ' registered successfully!');
+}
+
 
 
 
@@ -176,6 +179,7 @@ class AuthController extends Controller
     // ✅ Store session
     $session->set([
         'id' => $user['id'],
+        'hospital_user_id' => $hospitalUser['id'], 
         'name' => $user['name'],
         'email' => $user['email'],
         'role' => $role,
